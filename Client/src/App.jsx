@@ -2,14 +2,22 @@
 // import * as Y from 'yjs'
 // import { WebsocketProvider } from 'y-websocket'
 
-import Editor from "./Component/Editor"
+
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import DocumentPage from './Pages/DocumentPage'
+import Dashboard from './Pages/Dashboard'
 
 const App = () => {
   return (
-    <div style={{padding:'2rem'}}>
-      <h2>Weave - sync test</h2>
-     <Editor className='border-4 border-gray-300 rounded-lg p-4'/>
-    </div>
+  <div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/doc/:id" element={<DocumentPage />} />
+      </Routes>
+    </BrowserRouter>
+  </div>
+
   )
 }
 

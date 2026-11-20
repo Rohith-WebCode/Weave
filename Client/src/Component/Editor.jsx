@@ -1,13 +1,10 @@
-import {useEditor,EditorContent}from '@tiptap/react'
+import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-// import { useEffect, useState } from "react"
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCaret  from '@tiptap/extension-collaboration-caret'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
-
-const ydoc = new Y.Doc()
-const provider = new WebsocketProvider('ws://localhost:1234', 'my-document', ydoc)
+import { useEffect, useState } from 'react'
 
 const users = [
   { name: 'User 1', color: '#ff0000' },
@@ -16,13 +13,13 @@ const users = [
 ]
 const currentUser = users[Math.floor(Math.random() * users.length)]
 
-const Editor = () => {
+const EditorInner = ({ ydoc, provider }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         undoRedo: false,
       }),
-       Collaboration.configure({
+      Collaboration.configure({
         document: ydoc,
       }),
       CollaborationCaret.configure({
@@ -31,16 +28,40 @@ const Editor = () => {
       }),
     ],
   })
-
   return (
     <div>
       <div className='flex gap-2 mb-4'>
-      <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>H1</button>
-      <button onClick={() => editor.chain().focus().toggleBold().run()}>Bold</button>
+        <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>H1</button>
+        <button onClick={() => editor.chain().focus().toggleBold().run()}>Bold</button>
       </div>
-      <EditorContent  editor={editor} className='border-4 border-gray-300 rounded-lg p-4'/>
+      <EditorContent editor={editor} className='border-4 border-gray-300 rounded-lg p-4' />
     </div>
   )
+}
+
+const Editor = ({ docId }) => {
+
+  const [connection, setConnection] = useState(null)
+
+  useEffect(() => {
+    const ydoc = new Y.Doc()
+    const provider = new WebsocketProvider('ws://localhost:1234', docId, ydoc)
+    setConnection({ ydoc, provider })
+
+    return () => {
+      provider.destroy()
+      ydoc.destroy()
+    }
+  }, [docId]);
+
+
+
+
+  if (!connection) return <p>Connecting...</p>
+
+  return <EditorInner ydoc={connection.ydoc} provider={connection.provider} />
+
+
 }
 
 export default Editor
